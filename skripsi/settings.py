@@ -24,10 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-oups0c&47w#@b@2%ewd%u7zi0glp1##-u!sx7qay20e0wqginv'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = [*]
-
+ALLOWED_HOST = ['analisissentimen-digitalkorlantas.my.id', 'www.analisissentimen-digitalkorlantas.my.id']
+CSRF_TRUSTED_ORIGINS = ['https://analisissentimen-digitalkorlantas.my.id', 'https://www.analisissentimen-digitalkorlantas.my.id']
 
 # Application definition
 
@@ -149,9 +149,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # SMPT Setup
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = 'mail.analisissentimen-digitalkorlantas.my.id'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = False
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'admin@analisissentimen-digitalkorlantas.my.id'
-EMAIL_HOST_PASSWORD = '_Brilliants00'
+EMAIL_HOST_USER = 'email'
+EMAIL_HOST_PASSWORD = 'password'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
