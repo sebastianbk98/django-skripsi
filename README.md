@@ -3,40 +3,40 @@ Django project untuk skripsi
 
 # setup VPS
 ## update dan upgrade
-sudo apt update
-sudo apt upgrade
+`sudo apt update
+sudo apt upgrade`
 
 ## Install package
-sudo apt install nginx python3-venv certbot python3-certbot-nginx 
+`sudo apt install nginx python3-venv certbot python3-certbot-nginx`
 
 ## clone project
-cd /var/www/
+`cd /var/www/
 sudo git clone https://github.com/sebastianbk98/django-skripsi.git
 sudo chmod -R a+rwx /var/www/django-skripsi
-cd django-skripsi
+cd django-skripsi`
 
 ## Python Virtual Environment
-python3 -m venv venv
-source venv/bin/activate
+`python3 -m venv venv
+source venv/bin/activate`
 
 ## Install Python Package
-pip install gunicorn
-pip --default-timeout=3600 install -r requirements.txt
+`pip install gunicorn
+pip --default-timeout=3600 install -r requirements.txt`
 
 ## Update Django Settings
 Change SMTP
 
 ## Run Gunicorn
-screen -S gunicorn_session
-gunicorn --timeout 3600 --worker 3 --bind 0.0.0.0:8000 skripsi.wsgi:application
-screen -r gunicorn_session
+`screen -S gunicorn_session`
+`gunicorn --timeout 3600 --worker 3 --bind 0.0.0.0:8000 skripsi.wsgi:application`
+`screen -r gunicorn_session`
 
 ## create SSL Cert
-sudo certbot --nginx -d analisissentimen-digitalkorlantas.my.id -d www.analisissentimen-digitalkorlantas.my.id
+`sudo certbot --nginx -d analisissentimen-digitalkorlantas.my.id -d www.analisissentimen-digitalkorlantas.my.id`
 
 ## setup Nginx
-sudo nano /etc/nginx/sites-available/django-skripsi
-
+`sudo nano /etc/nginx/sites-available/django-skripsi`
+```
 server {
     listen 80;
     server_name analisissentimen-digitalkorlantas.my.id, , www.analisissentimen-digitalkorlantas.my.id;
@@ -76,14 +76,14 @@ server {
         proxy_set_header Connection "upgrade";
     }
 }
-
-sudo ln -s /etc/nginx/sites-available/django-skripsi /etc/nginx/sites-enabled/
+```
+`sudo ln -s /etc/nginx/sites-available/django-skripsi /etc/nginx/sites-enabled/`
 
 ## Test Nginx and restart
-sudo nginx -t
-sudo systemctl restart nginx
+`sudo nginx -t`
+`sudo systemctl restart nginx`
 
 ## Setup firewall
-sudo ufw enable
-sudo ufw allow 'Nginx Full'
-
+`sudo ufw enable`
+`sudo ufw allow 'Nginx Full'`
+`sudo ufw status`
