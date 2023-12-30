@@ -1,0 +1,266 @@
+{% extends "sentiment_analysis/admin/admin_base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}
+  Daftar Model
+{% endblock title %}
+{% block sidebar %}
+  <ul class="nav nav-pills nav-fill flex-column">
+    <li class="nav-item">
+      <a class="nav-link" href="{% url "admin-index" %}">Dashboard</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link active"
+         aria-current="page"
+         href="{% url "model-list" %}">Model</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url "admin:index" %}">Django Admin</a>
+    </li>
+  </ul>
+{% endblock sidebar %}
+{% block admin-content %}
+  {% if selected_model %}
+    <h3>Model yang digunakan</h3>
+    <table class="table table-striped p-2 text-center">
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>Akurasi</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ selected_model.name }}</td>
+          <td>{{ selected_model.accuracy }}</td>
+          <td>
+            <i class="bi bi-check2"></i> Aktif
+          </td>
+          <td>
+            <button type="button"
+                    class="btn btn-primary"
+                    id="detail"
+                    onclick='get_data("{{ selected_model.name }}")'>Detail</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  {% endif %}
+  <h3>Semua model</h3>
+  <div class="row justify-content-center align-items-center p-1">
+    <div class="col">
+      <a href="{% url 'upload-dataset' %}">
+        <button type="button" class="btn btn-primary">Buat Model Baru</button>
+      </a>
+      <button type="button"
+              class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#upload-model">Unggah Model</button>
+    </div>
+  </div>
+  <table class="table table-striped p-2 text-center">
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>Akurasi</th>
+        <th>Status</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for model in models %}
+        <tr>
+          <td>{{ model.name }}</td>
+          <td>{{ model.accuracy }}</td>
+          <td>
+            {% if model.is_selected %}
+              <i class="bi bi-check2"></i> Aktif
+            {% else %}
+              <i class="bi bi-ban"></i> Tidak Aktif
+            {% endif %}
+          </td>
+          <td>
+            <button type="button"
+                    class="btn btn-success"
+                    id="detail"
+                    onclick='set_model_active("{{ model.name }}")'>Set Aktif</button>
+            <button type="button"
+                    class="btn btn-primary"
+                    id="detail"
+                    onclick='get_data("{{ model.name }}")'>Detail</button>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="modal fade"
+       id="upload-model"
+       data-bs-backdrop="static"
+       tabindex="-1"
+       aria-labelledby="upload-modelModalLabel"
+       aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="upload-modelModalLabel">Unggah Model</h1>
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method="post" enctype="multipart/form-data" id="upload-model-form">
+            {% csrf_token %}
+            {{ form|crispy }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            <button type="submit" class="btn btn-primary">Unggah Model</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade"
+       id="model-detail"
+       data-bs-backdrop="static"
+       tabindex="-1"
+       aria-labelledby="model-detailModalLabel"
+       aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="model-detailModalLabel">Detail</h1>
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="table-responsive">
+            <table class="table">
+              <tbody>
+                <tr>
+                  <td>Nama</td>
+                  <td>:</td>
+                  <td class="text-center" id="model-name"></td>
+                </tr>
+                <tr>
+                  <td>Dataset</td>
+                  <td>:</td>
+                  <td class="text-center">
+                    <a class="btn btn-primary"
+                       id="dataset-download"
+                       data-file=""
+                       href=""
+                       role="button">Unduh</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td>TF-IDF</td>
+                  <td>:</td>
+                  <td class="text-center">
+                    <a class="btn btn-primary"
+                       id="tfidf-download"
+                       data-file=""
+                       href=""
+                       role="button">Unduh</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td>LSTM Model</td>
+                  <td>:</td>
+                  <td class="text-center">
+                    <a class="btn btn-primary"
+                       id="lstm-download"
+                       data-file=""
+                       href=""
+                       role="button">Unduh</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock admin-content %}
+{% block script %}
+  <script>
+    function set_model_active(name){
+      $.ajax({
+        type: "POST",
+        url: '{% url "set-model-active" %}',
+        dataType: "json",
+        data: {
+          'csrfmiddlewaretoken': '{{csrf_token}}',
+          'name': name
+        },
+        success: function (response) {
+          if(response.success){
+            location.reload()
+          }else{
+            alert('Proses gagal')
+          }
+          
+        },
+        error: function (rs, e) {
+          alert(rs.responseText);
+        }
+      });
+    }
+  function get_data(name) {
+    $.ajax({
+      type: "POST",
+      url: '{% url "get-model" %}',
+      dataType: "json",
+      data: {
+        'csrfmiddlewaretoken': '{{csrf_token}}',
+        'name': name
+      },
+      success: function (response) {
+        $('#model-name').html(response.model[0].name);
+        $('#dataset-download').attr("href", '{% url "download-file"%}?name='+response.model[0].name+'&type=dataset');
+          $('#tfidf-download').attr("href", '{% url "download-file"%}?name='+response.model[0].name+'&type=tfidf');
+          $('#lstm-download').attr("href", '{% url "download-file"%}?name='+response.model[0].name+'&type=lstm');
+        
+        $('#model-detail').modal('toggle')
+      },
+      error: function (rs, e) {
+        alert(rs.responseText);
+      }
+    });
+  }
+  $(document).ready(function () {
+    $('#upload-model-form').submit(function (event) {
+      event.preventDefault();
+      $.ajax({
+        type: "POST",
+        url: '{% url "is_name_exist" %}',
+        dataType: "json",
+        data: {
+          'csrfmiddlewaretoken': '{{csrf_token}}',
+          'name': $('[name="name"]').val(),
+        },
+        success: function (response) {
+          if (response.success == false) {
+            alert('Nama ini sudah ada di database!');
+            return false;
+          }
+          $('form').off('submit').submit();
+          return true;
+        },
+        error: function (rs, e) {
+          alert(rs.responseText);
+          event.preventDefault();
+        }
+      });
+    })
+  })
+  </script>
+{% endblock script %}

@@ -1,0 +1,204 @@
+{% extends "sentiment_analysis/admin/admin_base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}
+  Latih Model
+{% endblock title %}
+{% block sidebar %}
+  <ul class="nav nav-pills nav-fill flex-column">
+    <li class="nav-item">
+      <a class="nav-link" href="{% url "admin-index" %}">Dashboard</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link active"
+         aria-current="page"
+         href="{% url "model-list" %}">Model</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url "admin:index" %}">Django Admin</a>
+    </li>
+  </ul>
+{% endblock sidebar %}
+{% block admin-content %}
+  <h1 class="text-center">Latih Model</h1>
+  {% if not history_data %}
+    <div class="row justify-content-center align-items-center p-1">
+      <div class="col">
+        <button type="button"
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#train-model">Latih Model</button>
+      </div>
+    </div>
+  {% endif %}
+  {% if data %}
+    <div class="row justify-content-center p-1">
+      <div class="col">
+        <table class="table table-striped">
+          <thead>
+            <tr class="text-center">
+              <th>Content</th>
+              <th>Sentiment</th>
+              <th>Processed Content</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i in data %}
+              <tr>
+                <td>{{ i.content }}</td>
+                <td class="text-center">{{ i.sentiment }}</td>
+                <td>{{ i.processed_review }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+  {% if history_data %}
+    <div class="row p-1">
+      <div class="col-md-12">
+        <button type="button"
+                class="btn btn-primary m-2"
+                data-bs-toggle="modal"
+                data-bs-target="#train-model">Latih Model</button>
+        <a href="{% url 'evaluation' %}">
+          <button type="button" class="btn btn-primary m-2">Evaluasi</button>
+        </a>
+      </div>
+    </div>
+    <div class="row justify-content-center align-items-center  p-1">
+      <div class="col">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Loss</th>
+              <th>Accuracy</th>
+              <th>Validation Loss</th>
+              <th>Validation Accuracy</th>
+              <th>Learning Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i in history_data %}
+              <tr>
+                <td>{{ i.loss }}</td>
+                <td>{{ i.accuracy }}</td>
+                <td>{{ i.val_loss }}</td>
+                <td>{{ i.val_accuracy }}</td>
+                <td>{{ i.lr }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+  {% if graph_loss %}
+    <div class="row text-center  p-1">
+      <div class="col">
+        <img src="data:image/png;base64,{{ graph_loss|safe }}"
+             height="auto"
+             width="400px"
+             alt="">
+      </div>
+    </div>
+  {% endif %}
+  {% if graph_acc %}
+    <div class="row text-center  p-1">
+      <div class="col">
+        <img src="data:image/png;base64,{{ graph_acc|safe }}"
+             height="auto"
+             width="400px"
+             alt="">
+      </div>
+    </div>
+  {% endif %}
+  <div class="modal fade"
+       id="train-model"
+       data-bs-backdrop="static"
+       tabindex="-1"
+       aria-labelledby="train-modelModalLabel"
+       aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="train-modelModalLabel">Paramater Model</h1>
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method="post" id="train-model-form">
+            {% csrf_token %}
+            {{ form|crispy }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            <button type="submit" class="btn btn-primary" onclick="validation()">Latih Model</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade"
+       id="loading"
+       data-bs-backdrop="static"
+       tabindex="-1"
+       aria-labelledby="loadingModalLabel"
+       aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5 text-center" id="loadingModalLabel">Loading...</h1>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-warning" onclick="reload()">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock admin-content %}
+{% block script %}
+  <script>
+  function reload() {
+    window.stop();
+    $('#loading').modal('hide');
+    $('#train-model').modal('show');
+  }
+  function validation() {
+    $.ajax({
+      type: "POST",
+      url: '{% url "form_model_validation" %}',
+      dataType: "json",
+      data: {
+        'csrfmiddlewaretoken': '{{csrf_token}}',
+        'LSTM_Unit': $('[name="LSTM_Unit"]').val(),
+        'L2_Regulizer': $('[name="L2_Regulizer"]').prop('checked'),
+        'Dropout': $('[name="Dropout"]').val(),
+        'Recurrent_Dropout': $('[name="Recurrent_Dropout"]').val(),
+        'Batch_Size': $('[name="Batch_Size"]').val(),
+        'Reduce_Learning_Rate_Patience': $('[name="Reduce_Learning_Rate_Patience"]').val(),
+        'Early_Stopping_Patience': $('[name="Early_Stopping_Patience"]').val(),
+        'epoch': $('[name="epoch"]').val(),
+      },
+      success: function (response) {
+        if (response.success) {
+          $('#train-model').modal('hide');
+          $('#loading').modal('show');
+        }
+      },
+      error: function (rs, e) {
+        alert(rs.responseText);
+      }
+    });
+  }
+  </script>
+{% endblock script %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}
+  Prediksi Sentimen
+{% endblock title %}
+{% block content %}
+  {% if prediction %}
+    {% if prediction.sentiment > 0.5 %}
+      <div class="alert alert-success alert-dismissible" role="alert">
+        {{ prediction|linebreaksbr }}
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close"></button>
+      </div>
+    {% else %}
+      <div class="alert alert-danger alert-dismissible" role="alert">
+        {{ prediction|linebreaksbr }}
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close"></button>
+      </div>
+    {% endif %}
+  {% endif %}
+  <div class="row justify-content-center align-items-center  p-1">
+    <div class="col">
+      {% if no_model %}
+        <p>Tidak ada model yang aktif. Mohon tunggu admin mengaktifkan salah satu model.</p>
+        <button type="button"
+                class="btn btn-secondary"
+                data-bs-toggle="modal"
+                data-bs-target="#analyze-sentiment"
+                disabled>Prediksi Sentimen</button>
+      {% else %}
+        <button type="button"
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#analyze-sentiment">Prediksi Sentimen</button>
+      {% endif %}
+    </div>
+  </div>
+  <div class="row justify-content-center align-items-center p-4">
+    <div class="col">
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr class="text-center">
+              <th scope="col">Teks</th>
+              <th scope="col">Skor Prediksi</th>
+              <th scope="col">Sentimen</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for data in last5predictions %}
+              <tr>
+                <td>{{ data.text }}</td>
+                <td class="text-center">{{ data.prediction }}</td>
+                <td class="text-center">
+                  {% if data.sentiment == 1 %}
+                    Positif
+                  {% else %}
+                    Negatif
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="3" class="text-center">Tidak ada data</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade"
+       id="analyze-sentiment"
+       tabindex="-1"
+       aria-labelledby="analyze-sentimentModalLabel"
+       aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="analyze-sentimentModalLabel">Prediksi Sentimen</h1>
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <form method="post">
+          {% csrf_token %}
+          <div class="modal-body">{{ form|crispy }}</div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            <button type="submit" class="btn btn-primary">Prediksi Sentimen</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
