@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}
+  Ubah Data Pengguna
+{% endblock title %}
+{% block content %}
+  <div class="d-flex flex-column align-items-center">
+    <h2>Ubah Data Pengguna</h2>
+    <form method="post" id="form">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <div class="d-flex flex-column align-items-center" text-align="center">
+        <button type="submit" class="btn btn-primary">Ubah Data</button>
+      </div>
+    </form>
+  </div>
+{% endblock content %}
+{% block script %}
+  <script>
+  $(document).ready(function () {
+    $('#form').submit(function (event) {
+      console.log('test')
+      event.preventDefault();
+      flag = false
+      if ($('[name="username"]').val() != "{{ user.username }}") {
+        flag = true
+        console.log('username')
+        $.ajax({
+          type: "POST",
+          url: '{% url "is_username_exist" %}',
+          dataType: "json",
+          data: {
+            'csrfmiddlewaretoken': '{{ csrf_token }}',
+            'username': $('[name="username"]').val(),
+          },
+          success: function (response) {
+            if (response.success == false) {
+              alert('Nama ini sudah ada di database!');
+              return false;
+            }
+          },
+          error: function (rs, e) {
+            alert(rs.responseText);
+            event.preventDefault();
+          }
+        });
+      }
+      if ($('[name="email"]').val() != "{{ user.email }}") {
+        flag = true
+        console.log('email')
+        $.ajax({
+          type: "POST",
+          url: '{% url "is_email_exist" %}',
+          dataType: "json",
+          data: {
+            'csrfmiddlewaretoken': '{{ csrf_token }}',
+            'email': $('[name="email"]').val(),
+          },
+          success: function (response) {
+            if (response.success == false) {
+              alert('Email ini sudah ada di database!');
+              return false;
+            }
+          },
+          error: function (rs, e) {
+            alert(rs.responseText);
+            event.preventDefault();
+          }
+        });
+      }
+      if(flag){
+        $('form').off('submit').submit();
+        return true;
+      }
+      
+    })
+  })
+  </script>
+{% endblock script %}

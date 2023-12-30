@@ -1,0 +1,81 @@
+{% extends "sentiment_analysis/admin/admin_base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}
+  Normalisasi Dataset
+{% endblock title %}
+{% block sidebar %}
+  <ul class="nav nav-pills nav-fill flex-column">
+    <li class="nav-item">
+      <a class="nav-link" href="{% url "admin-index" %}">Dashboard</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link active"
+         aria-current="page"
+         href="{% url "model-list" %}">Model</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{% url "admin:index" %}">Django Admin</a>
+    </li>
+  </ul>
+{% endblock sidebar %}
+{% block admin-content %}
+  <h1 class="text-center">Normalisasi Dataset</h1>
+  <form method='post'>
+    {% csrf_token %}
+    <button type="submit"
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#loading">Normalisasi Dataset</button>
+  </form>
+  {% if data %}
+    <table class="table table-striped">
+      <thead>
+        <tr class="text-center">
+          <th>Content</th>
+          <th>Sentiment</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in data %}
+          <tr>
+            <td>{{ i.content }}</td>
+            <td class="text-center">{{ i.sentiment }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+  <div class="modal fade"
+       id="loading"
+       data-bs-backdrop="static"
+       tabindex="-1"
+       aria-labelledby="loadingModalLabel"
+       aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5 text-center" id="loadingModalLabel">Loading...</h1>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-warning" onclick="reload()">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock admin-content %}
+{% block script %}
+  <script>
+  function reload() {
+    window.stop();
+    $('#loading').modal('hide');
+    $('#train-model').modal('show');
+  }
+  </script>
+{% endblock script %}
