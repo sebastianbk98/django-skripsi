@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+
+  app:
+    container_name: "app"
+    build: .
+    volumes:
+      - "./media:/var/www/media"
+
+  nginx:
+    container_name: "router"
+    image: "nginx"
+    links:
+      - app
+    volumes:
+      - "./.docker/nginx-default.conf:/etc/nginx/conf.d/default.conf"
+      - "./static:/usr/share/nginx/html/static"
+      - "./media:/usr/share/nginx/html/media"
+    ports:
+      - "80:80"
+      - "443:443"
