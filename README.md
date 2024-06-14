@@ -41,7 +41,7 @@ Change SMTP
 screen -S gunicorn_session
 ```
 ```
-gunicorn --timeout 3600 --worker 3 --bind 0.0.0.0:8000 skripsi.wsgi:application
+gunicorn --timeout 3600 --workers 3 --bind 0.0.0.0:8000 skripsi.wsgi:application
 ```
 ```
 screen -r gunicorn_session
